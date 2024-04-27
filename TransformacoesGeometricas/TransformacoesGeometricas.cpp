@@ -222,7 +222,7 @@ void DesenhaPersonagemMatricial()
                SetaCor(cor);
                DesenhaCelula();
                defineCor(Wheat);
-               DesenhaBorda();
+               DesenhaBorda();//bordas da matriz interna do desenho (diferencia pixel por pixel)
            }
            glTranslatef(1, 0, 0);
        }
@@ -322,57 +322,47 @@ void DesenhaRS()
 void CriaInstancias()
 {
 
-    int i=0;
+    //Informações do playe
+    //int i=0;
     float ang;
     ang = -45;
-    Personagens[i].Posicao = Ponto (10,0);
-    Personagens[i].Escala = Ponto (1,1);
-    Personagens[i].Rotacao = ang;
-    Personagens[i].IdDoModelo = 0;
-    Personagens[i].Tipo = 0;
-    Personagens[i].modelo = DesenhaPersonagemMatricial;
-    Personagens[i].Pivot = Ponto(2.5,0);
-    Personagens[i].Direcao = Ponto(0,1); // direcao do movimento para a cima
-    Personagens[i].Direcao.rotacionaZ(ang); // direcao alterada para a direita
-    Personagens[i].Velocidade = 2; // move-se a 5 m/s
+    Personagens[0].Posicao = Ponto (0,0);//Onde ele irá nascer
+    Personagens[0].Escala = Ponto (1,1);
+    Personagens[0].Rotacao = ang;
+    Personagens[0].IdDoModelo = 0;
+    Personagens[0].Tipo = 0;//Personagem principal
+    Personagens[0].Pivot = Ponto(8,0);//Deslocamento do Envelope
+    Personagens[0].Direcao = Ponto(0,1); // direcao do movimento para a cima
+    Personagens[0].Direcao.rotacionaZ(ang); // direcao alterada para a direita
+    Personagens[0].Velocidade = 2; // move-se a 5 m/s
+    Personagens[0].modelo = DesenhaPersonagemMatricial;
+    //----------------------------------------------------
+    //Corações
 
-    
-    i++; 
-    Personagens[i].Posicao = Ponto (38,46);
-    Personagens[i].Escala = Ponto (0.6,0.6);
-    Personagens[i].Tipo = 1;
-    Personagens[i].Rotacao = 0;
-    Personagens[i].IdDoModelo = 2;
-    Personagens[i].dead = false;
-    Personagens[i].modelo = DesenhaPersonagemMatricial;
-    i++;
-    Personagens[i].Posicao = Ponto (42,46);
-    Personagens[i].Escala = Ponto (0.6,0.6);
-    Personagens[i].Tipo = 1;
-    Personagens[i].Rotacao = 0;
-    Personagens[i].dead = false;
-    Personagens[i].IdDoModelo = 2;
-    Personagens[i].modelo = DesenhaPersonagemMatricial;
-    i++;
-    Personagens[i].Posicao = Ponto (46,46);
-    Personagens[i].Escala = Ponto (0.6,0.6);
-    Personagens[i].Tipo = 1;
-    Personagens[i].Rotacao = 0;
-    Personagens[i].dead = false;
-    Personagens[i].IdDoModelo = 2;
-    Personagens[i].modelo = DesenhaPersonagemMatricial;
-    i++;
+    //i++; 
+    for(int i=1; i < 4;i++){
+        if (i==1)Personagens[i].Posicao = Ponto (38,46);
+        else if (i==2)Personagens[i].Posicao = Ponto (42,46);
+        else Personagens[i].Posicao = Ponto (46,46);
+        Personagens[i].Escala = Ponto (0.6,0.6);
+        Personagens[i].Tipo = 1;//Vidas
+        Personagens[i].IdDoModelo = 2;
+        Personagens[i].modelo = DesenhaPersonagemMatricial;
+    }
+    //----------------------------------------------------
+    //Inimigos
+    int i = 4;
     Personagens[i].Posicao = Ponto (-20,-20);
     Personagens[i].Escala = Ponto (1,1);
-    Personagens[i].Tipo = 2;
+    Personagens[i].Tipo = 2;//Inimigo
     Personagens[i].Rotacao = 0;
-    Personagens[i].Pivot = Ponto(-20,-20);
+    Personagens[i].Pivot = Ponto(6,0);
     Personagens[i].dead = false;
     Personagens[i].Direcao = Ponto(0,1); // direcao do movimento para a cima
     Personagens[i].Direcao.rotacionaZ(0); 
     Personagens[i].IdDoModelo = 3;
     Personagens[i].modelo = DesenhaPersonagemMatricial;
-    Personagens[i].Velocidade = 2; 
+    Personagens[i].Velocidade = 0; 
     i++;
     Personagens[i].Posicao = Ponto (20,-20);
     Personagens[i].Escala = Ponto (1,1);
@@ -388,7 +378,7 @@ void CriaInstancias()
     // Salva os dados iniciais do personagem i na area de backup
     
     nInstancias = i+1; // esta variavel deve conter a quantidade total de personagens
-
+    
 }
 
 // **********************************************************************
@@ -444,17 +434,17 @@ void AtualizaEnvelope(int personagem)
     
     Ponto A;
     Ponto V;
-    V = I.Direcao * (MM.nColunas/2.0);
+    V = I.Direcao * (MM.nColunas/2.0) * I.Escala.x; // Considera a escala em x
     V.rotacionaZ(90);
     A = I.PosicaoDoPersonagem + V;
     
-    Ponto B = A + I.Direcao*(MM.nLinhas);
+    Ponto B = A + I.Direcao*(MM.nLinhas) * I.Escala.y; // Considera a escala em y
     
-    V = I.Direcao * (MM.nColunas);
+    V = I.Direcao * (MM.nColunas) * I.Escala.x; // Considera a escala em x
     V.rotacionaZ(-90);
     Ponto C = B + V;
     
-    V = -I.Direcao * (MM.nLinhas);
+    V = -I.Direcao * (MM.nLinhas) * I.Escala.y; // Considera a escala em y
     Ponto D = C + V;
     
     // Desenha o envelope
@@ -472,6 +462,7 @@ void AtualizaEnvelope(int personagem)
     Personagens[personagem].Envelope[2] = C;
     Personagens[personagem].Envelope[3] = D;
 }
+
 // **********************************************************************
 //
 // **********************************************************************
@@ -484,6 +475,7 @@ void AtualizaJogo()
     //  - calcular colisões
     // Para calcular as colisoes eh preciso fazer o calculo do envelopes de
     // todos os personagens
+    
     for(int i=0; i<nInstancias;i++)
     {
         if(Personagens[i].dead)
@@ -657,10 +649,10 @@ void arrow_keys ( int a_keys, int x, int y )
             Personagens[0].Direcao.rotacionaZ(-5);
             break;
 		case GLUT_KEY_UP:       // Se pressionar UP
-            Personagens[0].Velocidade++;
+            //Personagens[0].Velocidade++;
             break;
 	    case GLUT_KEY_DOWN:     // Se pressionar UP
-            Personagens[0].Velocidade--;
+            //Personagens[0].Velocidade--;
 			break;
 		default:
 			break;
