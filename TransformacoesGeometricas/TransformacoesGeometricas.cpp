@@ -48,7 +48,7 @@ Temporizador T;
 double AccumDeltaT=0;
 Temporizador T2;
 
-Instancia Personagens[500];
+Instancia Personagens[500];//vai guardar as informações bases do personagem, inimigos e o spawn dos tiros
 ModeloMatricial Modelos[15];
 int AREA_DE_BACKUP = 250;
 
@@ -86,7 +86,7 @@ void CarregaModelos()
     MeiaSeta.LePoligono("MeiaSeta.txt");
     Mastro.LePoligono("Mastro.txt");
  
-    Modelos[0].leModelo("MatrizDisparador.txt");
+    Modelos[0].leModelo("MatrizNave.txt");
     //Modelos[0].Imprime();
     Modelos[1].leModelo("MatrizProjetil.txt");
     
@@ -94,11 +94,13 @@ void CarregaModelos()
     Modelos[3].leModelo("MatrizInimigo1.txt");
     Modelos[4].leModelo("MatrizInimigo2.txt");
     Modelos[5].leModelo("MatrizInimigo3.txt");
+    Modelos[6].leModelo("MatrizDisparador.txt");
+    Modelos[7].leModelo("MatrizProjetilInimigo.txt");
     /*
     Modelos[2].leModelo("NaveCaca.txt");
     Modelos[3].leModelo("NavePassageiros.txt");
     */
-    nModelos = 6;
+    nModelos = 8;
 }
 
 // **********************************************************************
@@ -338,11 +340,12 @@ void CriaInstancias()
     Personagens[i].Rotacao = ang;
     Personagens[i].IdDoModelo = 0;
     Personagens[i].Tipo = 0;//Personagem principal
-    Personagens[i].Pivot = Ponto(8,0);//Deslocamento do Envelope
+    Personagens[i].Pivot = Ponto(2.5,0);//Deslocamento do Envelope
     Personagens[i].Direcao = Ponto(0,1); // direcao do movimento para a cima
     Personagens[i].Direcao.rotacionaZ(ang); // direcao alterada para a direita
-    Personagens[i].Velocidade = 10; // move-se a 5 m/s
+    Personagens[i].Velocidade = 4; // move-se a 10 m/s
     Personagens[i].modelo = DesenhaPersonagemMatricial;
+    Personagens[i].t = 0.0;
     i++; 
     //----------------------------------------------------
     //Corações == 1,2,3
@@ -358,25 +361,48 @@ void CriaInstancias()
     }
     //----------------------------------------------------
     //Inimigos 4,5
+    /*
+    int j = 0; 
+    for(; i< 14;i++){//ATÉ 10 INIMIGOS
+        Personagens[i].Posicao = Ponto (-20,-20);// fazer val aleatório dentro do mapa
+        Personagens[i].Escala = Ponto (1,1);
+        Personagens[i].Tipo = 2;//Inimigo
+        Personagens[i].Rotacao = 0;//   valor random de 360 -180 --> se valor menor que 180, possibilitando chegar de -180 a 180
+        Personagens[i].dead = true;//começa morto, para não aparecer+
+        Personagens[i].Direcao.rotacionaZ(0);
+        Personagens[i].Direcao = Ponto(0,1); // direcao do movimento para a cima 
+        Personagens[i].IdDoModelo = 4; //Fazer um valor random entre 3 a 6 (DEVEM SER 4 MODELOS)
+        if (Personagens[i].IdDoModelo==3) Personagens[i].Pivot = Ponto(6,0);
+        else if(Personagens[i].IdDoModelo==4) Personagens[i].Pivot = Ponto(4,0);
+        else if(Personagens[i].IdDoModelo==5) Personagens[i].Pivot = Ponto(5.5,0);
+        else Personagens[i].Pivot = Ponto(8,0);// ainda rever
+        Personagens[i].modelo = DesenhaPersonagemMatricial;
+        Personagens[i].Velocidade = 2;
+        Personagens[i].t = 0.0;
+        cout << "inimigo: "<< i << " criado"<< endl;
+    }
+    */
+    
     Personagens[i].Posicao = Ponto (-20,-20);
     Personagens[i].Escala = Ponto (1,1);
     Personagens[i].Tipo = 2;//Inimigo
     Personagens[i].Rotacao = 0;
-    Personagens[i].Pivot = Ponto(6,0);
+    Personagens[i].Pivot = Ponto(8,0);
     Personagens[i].dead = false;
     Personagens[i].Direcao = Ponto(0,1); // direcao do movimento para a cima
     Personagens[i].Direcao.rotacionaZ(0); 
-    Personagens[i].IdDoModelo = 3;
+    Personagens[i].IdDoModelo = 6;
     Personagens[i].modelo = DesenhaPersonagemMatricial;
     Personagens[i].Velocidade = 0;
+    Personagens[i].t = 0.0;
     i++;
-    
+    /*
     Personagens[i].Posicao = Ponto (20,-20);
     Personagens[i].Escala = Ponto (1,1);
     Personagens[i].Tipo = 2;
     Personagens[i].Rotacao = 0;
-    Personagens[i].Pivot = Ponto(20,-20);
-    Personagens[i].dead = true;
+    Personagens[i].Pivot = Ponto(4,0);
+    Personagens[i].dead = false;
     Personagens[i].Direcao = Ponto(0,1); // direcao do movimento para a cima
     Personagens[i].Direcao.rotacionaZ(0); 
     Personagens[i].IdDoModelo = 4;
@@ -384,7 +410,7 @@ void CriaInstancias()
     Personagens[i].Velocidade = 2;
     i++;
     // Salva os dados iniciais do personagem i na area de backup
-    
+    */
     nInstancias = i; // esta variavel deve conter a quantidade total de personagens
     
 }
@@ -433,6 +459,7 @@ bool TestaColisao(int Objeto1, int Objeto2)
 // **********************************************************************
 // Esta função calcula o envelope do personagem matricial
 // **********************************************************************
+Ponto linha_cabeca[500];//pega a linha da cabeça de cada personagem
 void AtualizaEnvelope(int personagem)
 {
     Instancia I;
@@ -455,6 +482,9 @@ void AtualizaEnvelope(int personagem)
     V = -I.Direcao * (MM.nLinhas) * I.Escala.y; // Considera a escala em y
     Ponto D = C + V;
     
+    linha_cabeca[personagem].x = (B.x+C.x)/2.0;
+    linha_cabeca[personagem].y = (B.y+C.y)/2.0;
+
     // Desenha o envelope
     defineCor(Red);
     glBegin(GL_LINE_LOOP);
@@ -474,6 +504,9 @@ void AtualizaEnvelope(int personagem)
 // **********************************************************************
 //
 // **********************************************************************
+int kills =0;
+int ult_spawn=0;
+int ult_inimigo_spawn=4;//informa o inimigo anterior (no caso do 3 é um coração shhhhhh)
 void AtualizaJogo()
 {
     // Esta funcao deverá atualizar todos os elementos do jogo
@@ -483,7 +516,7 @@ void AtualizaJogo()
     //  - calcular colisões
     // Para calcular as colisoes eh preciso fazer o calculo do envelopes de
     // todos os personagens
-    
+
     for(int i=0; i<nInstancias;i++)
     {
         if(Personagens[i].dead)
@@ -493,7 +526,7 @@ void AtualizaJogo()
     // Feito o calculo, eh preciso testar todos os tiros e
     // demais personagens contra o jogador
     
-    for(int i=4; i<nInstancias;i++) // comeca em 4 pois o 0 eh o personagem e 1->3s
+    for(int i=4; i<nInstancias;i++) // comeca em 4 pois o 0 eh o personagem e 1->3
     {
         if(Personagens[i].dead || Personagens[i].Tipo == 3)//Se o personagem estiver morto ou for um tiro
             continue;
@@ -511,11 +544,35 @@ void AtualizaJogo()
                 if(TestaColisao(i,j)){
                     Personagens[i].dead = true;
                     Personagens[j].dead = true;
+                    if((Personagens[i].Tipo==1 && Personagens[j].Tipo==2) ||Personagens[i].Tipo==2 &&Personagens[j].Tipo==1){//Se a colisão for de um tiro com um inimigo kill++;
+                        kills++;
+                    }
                 }
             }
         }
     }
-    if( vidas == 0 || timer == 180)//Jogo acaba, se vida zerar, 180 segundos
+
+    if(ult_inimigo_spawn <15){
+        boolean vivos = false;
+        for (int i = 4; i < 14;i++){//Verifica se todos os inimigos estão mortos
+            if(Personagens[i].dead==false){//se estiver vivo
+                vivos = true;
+            }
+        }
+        if(vivos == true){//Se tiver inimigos vivos
+            if(timer>=ult_spawn+5){//Passou 5 segundos sem matar um inimigo,spawna o próximo
+                Personagens[ult_inimigo_spawn].dead = false;
+                ult_inimigo_spawn++;
+                ult_spawn = timer;
+            }
+        }else{
+            Personagens[ult_inimigo_spawn].dead = false;
+            ult_inimigo_spawn++;
+            ult_spawn = timer;  
+        }
+    }
+
+    if( vidas == 0 || kills == 10)//Jogo acaba, se vida zerar, matou todos os inimigos
             exit ( 0 );
     //  - remover/inserir personagens
     //  - atualizar áreas de mensagens e de icones
@@ -542,6 +599,19 @@ void AtualizaPersonagens(float tempoDecorrido)
             int ang = rand()%360;
             Personagens[i].Direcao.rotacionaZ(ang); // das naves inimigas
             Personagens[i].Rotacao = ang;
+        }
+        if(Personagens[i].Tipo ==2 && rand()%500 <10 && timer>Personagens[i].t+1 && !Personagens[i].dead){
+            Personagens[nInstancias].Posicao = Ponto(linha_cabeca[i].x,linha_cabeca[i].y);
+            Personagens[nInstancias].Rotacao = Personagens[i].Rotacao;
+            Personagens[nInstancias].Direcao = Personagens[i].Direcao;
+            Personagens[nInstancias].Escala = Ponto (1,1);
+            Personagens[nInstancias].Pivot = Ponto (0.5,0);
+            Personagens[nInstancias].Tipo = 4;//Tiro
+            Personagens[nInstancias].IdDoModelo = 7;
+            Personagens[nInstancias].Velocidade = 5 + Personagens[i].Velocidade;
+            Personagens[nInstancias].modelo = DesenhaPersonagemMatricial;
+            Personagens[i].t = timer;
+            nInstancias++;
         }
         Personagens[i].AtualizaPosicao(tempoDecorrido);
     }
@@ -613,7 +683,6 @@ void ContaTempo(double tempo)
 // **********************************************************************
 int limit_tiro = 10;//variavel que limita a quantidade de tiros em cadencia
 double recarga_temp = 0.0;// tempo para a proxima recarga, recarregue depois de 2 segundo sem atirar
-double tiro_temp = 0.0;// tempo entre um disparo e outros, 1 tiro acada 1 segundo
 void keyboard ( unsigned char key, int x, int y )
 {
 
@@ -627,37 +696,38 @@ void keyboard ( unsigned char key, int x, int y )
             break;
         case ' ':
             if(limit_tiro>0){//limita 10 tiros até recarregar
-                if(timer>=tiro_temp+1){//Cadencia de tiro a cada 1 segundo
-                    Personagens[nInstancias].Posicao = Personagens[0].Posicao;
-                    Personagens[nInstancias].Rotacao = Personagens[0].Rotacao;
-                    Personagens[nInstancias].Direcao = Personagens[0].Direcao;
-                    Personagens[nInstancias].Escala = Ponto (1,1);
-                    Personagens[nInstancias].Tipo = 3;//Tiro
-                    Personagens[nInstancias].IdDoModelo = 1;
-                    Personagens[nInstancias].Velocidade = 5;
-                    Personagens[nInstancias].modelo = DesenhaPersonagemMatricial;
-                    nInstancias++;
-                    limit_tiro--;
-                    recarga_temp=timer;
-                    tiro_temp=timer;
-                    cout << "Tiros restantes "<< limit_tiro+1 << endl;
+                if(timer>=recarga_temp+2){// Tempo de carregamento = 2 segundos
+                    if(timer>=Personagens[0].t+1){//Cadencia de tiro a cada 1 segundo
+                        //Personagens[nInstancias].Posicao = Personagens[0].PosicaoDoPersonagem;
+                        Personagens[nInstancias].Posicao = Ponto(linha_cabeca[0].x,linha_cabeca[0].y);
+                        Personagens[nInstancias].Rotacao = Personagens[0].Rotacao;
+                        Personagens[nInstancias].Direcao = Personagens[0].Direcao;
+                        Personagens[nInstancias].Escala = Ponto (1,1);
+                        Personagens[nInstancias].Pivot = Ponto (0.5,0);
+                        Personagens[nInstancias].Tipo = 3;//Tiro
+                        Personagens[nInstancias].IdDoModelo = 1;
+                        Personagens[nInstancias].Velocidade = 5 + Personagens[0].Velocidade;
+                        Personagens[nInstancias].modelo = DesenhaPersonagemMatricial;
+                        nInstancias++;
+                        limit_tiro--;
+                        Personagens[0].t=timer;
+                        cout << "Tiros restantes "<< limit_tiro+1 << endl;
+                    }
+                }else{
+                    cout<<"EM COULDOWN!"<<endl;
                 }
             }else{//Caso a munição acabe, força recarregar
-                recarga_temp=timer;
                 cout <<endl<< "Recarregando" <<endl;
+                recarga_temp=timer;
                 limit_tiro=10;//reseta o cartucho
                 cout<< endl<< "10 tiros disponiveis" << endl;
             }
             break;
         case 'r': //reloading sistem
-            if(timer>=recarga_temp+2){// Tempo de carregamento = 2 segundos
-                cout <<endl<< "Recarregando" <<endl;
-                limit_tiro=10;//reseta o cartucho
-                cout<< endl<< "10 tiros disponiveis" << endl;
-            }
-            else{
-                cout<<"EM COULDOWN!"<<endl;
-            }
+            cout <<endl<< "Recarregando" <<endl;
+            recarga_temp=timer;
+            limit_tiro=10;//reseta o cartucho
+            cout<< endl<< "10 tiros disponiveis" << endl;
             break;
         case 'a':
             
@@ -682,10 +752,10 @@ void arrow_keys ( int a_keys, int x, int y )
             Personagens[0].Direcao.rotacionaZ(-5);
             break;
 		case GLUT_KEY_UP:       // Se pressionar UP
-            //Personagens[0].Velocidade++;
+            if(Personagens[0].Velocidade < 15)Personagens[0].Velocidade++;
             break;
 	    case GLUT_KEY_DOWN:     // Se pressionar UP
-            //Personagens[0].Velocidade--;
+            if( Personagens[0].Velocidade>0)Personagens[0].Velocidade--;
 			break;
 		default:
 			break;
