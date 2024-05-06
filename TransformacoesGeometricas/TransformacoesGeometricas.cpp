@@ -82,20 +82,20 @@ void RotacionaAoRedorDeUmPonto(float alfa, Ponto P)
 // **********************************************************************
 void CarregaModelos()
 {
-    Mapa.LePoligono("EstadoRS.txt");
-    MeiaSeta.LePoligono("MeiaSeta.txt");
-    Mastro.LePoligono("Mastro.txt");
+    //Mapa.LePoligono("EstadoRS.txt");
+    //MeiaSeta.LePoligono("MeiaSeta.txt");
+    //Mastro.LePoligono("Mastro.txt");
  
     Modelos[0].leModelo("MatrizNave.txt");
     //Modelos[0].Imprime();
-    Modelos[1].leModelo("MatrizProjetil.txt");
+    Modelos[1].leModelo("MatrizProjetilInimigo.txt");
     
     Modelos[2].leModelo("MatrizCoracao.txt");
     Modelos[3].leModelo("MatrizInimigo1.txt");
     Modelos[4].leModelo("MatrizInimigo2.txt");
     Modelos[5].leModelo("MatrizInimigo3.txt");
     Modelos[6].leModelo("MatrizDisparador.txt");
-    Modelos[7].leModelo("MatrizProjetilInimigo.txt");
+    Modelos[7].leModelo("MatrizProjetil.txt");
     /*
     Modelos[2].leModelo("NaveCaca.txt");
     Modelos[3].leModelo("NavePassageiros.txt");
@@ -230,8 +230,8 @@ void DesenhaPersonagemMatricial()
            {
                SetaCor(cor);
                DesenhaCelula();
-               //defineCor(Wheat);
-               DesenhaBorda();//bordas da matriz interna do desenho (diferencia pixel por pixel)
+               //defineCor(Wheat);//Monstra cada pixel
+               //DesenhaBorda();//bordas da matriz interna do desenho (diferencia pixel por pixel)
            }
            glTranslatef(1, 0, 0);
        }
@@ -361,56 +361,33 @@ void CriaInstancias()
     }
     //----------------------------------------------------
     //Inimigos 4,5
-    /*
-    int j = 0; 
+    
+     int j = 0; 
     for(; i< 14;i++){//ATÉ 10 INIMIGOS
-        Personagens[i].Posicao = Ponto (-20,-20);// fazer val aleatório dentro do mapa
-        Personagens[i].Escala = Ponto (1,1);
-        Personagens[i].Tipo = 2;//Inimigo
-        Personagens[i].Rotacao = 0;//   valor random de 360 -180 --> se valor menor que 180, possibilitando chegar de -180 a 180
-        Personagens[i].dead = true;//começa morto, para não aparecer+
-        Personagens[i].Direcao.rotacionaZ(0);
-        Personagens[i].Direcao = Ponto(0,1); // direcao do movimento para a cima 
-        Personagens[i].IdDoModelo = 4; //Fazer um valor random entre 3 a 6 (DEVEM SER 4 MODELOS)
+        //variaveis que alteram a cada geração
+        double x = (rand() % 2 == 0) ? -40.0 : 40.0;
+        double y = (rand() % 2 == 0) ? -40.0 : 40.0;
+        Personagens[i].Posicao = Ponto (x,y);// fazer val aleatório dentro do mapa
+        Personagens[i].IdDoModelo = rand() % 4 + 3; //Fazer um valor random entre 3 a 6 (DEVEM SER 4 MODELOS)
+        ang = (rand() % 361) - 180;
+        //Declara o pivot de cada nave diferente
         if (Personagens[i].IdDoModelo==3) Personagens[i].Pivot = Ponto(6,0);
         else if(Personagens[i].IdDoModelo==4) Personagens[i].Pivot = Ponto(4,0);
         else if(Personagens[i].IdDoModelo==5) Personagens[i].Pivot = Ponto(5.5,0);
-        else Personagens[i].Pivot = Ponto(8,0);// ainda rever
+        else Personagens[i].Pivot = Ponto(8,0);
+        //dados que são iguais para todos
+        Personagens[i].Rotacao = ang;
+        Personagens[i].Direcao = Ponto(0,1); // direcao do movimento para a cima 
+        Personagens[i].Direcao.rotacionaZ(ang);
+        Personagens[i].dead = true;//começa morto, para não aparecer+
+        Personagens[i].Escala = Ponto (1,1);
+        Personagens[i].Tipo = 2;//Inimigo
+        Personagens[i].Velocidade = 4;
+        Personagens[i].t = 0.0;//tempo do ultimo tiro realizado
         Personagens[i].modelo = DesenhaPersonagemMatricial;
-        Personagens[i].Velocidade = 2;
-        Personagens[i].t = 0.0;
         cout << "inimigo: "<< i << " criado"<< endl;
     }
-    */
     
-    Personagens[i].Posicao = Ponto (-20,-20);
-    Personagens[i].Escala = Ponto (1,1);
-    Personagens[i].Tipo = 2;//Inimigo
-    Personagens[i].Rotacao = 0;
-    Personagens[i].Pivot = Ponto(8,0);
-    Personagens[i].dead = false;
-    Personagens[i].Direcao = Ponto(0,1); // direcao do movimento para a cima
-    Personagens[i].Direcao.rotacionaZ(0); 
-    Personagens[i].IdDoModelo = 6;
-    Personagens[i].modelo = DesenhaPersonagemMatricial;
-    Personagens[i].Velocidade = 0;
-    Personagens[i].t = 0.0;
-    i++;
-    /*
-    Personagens[i].Posicao = Ponto (20,-20);
-    Personagens[i].Escala = Ponto (1,1);
-    Personagens[i].Tipo = 2;
-    Personagens[i].Rotacao = 0;
-    Personagens[i].Pivot = Ponto(4,0);
-    Personagens[i].dead = false;
-    Personagens[i].Direcao = Ponto(0,1); // direcao do movimento para a cima
-    Personagens[i].Direcao.rotacionaZ(0); 
-    Personagens[i].IdDoModelo = 4;
-    Personagens[i].modelo = DesenhaPersonagemMatricial;
-    Personagens[i].Velocidade = 2;
-    i++;
-    // Salva os dados iniciais do personagem i na area de backup
-    */
     nInstancias = i; // esta variavel deve conter a quantidade total de personagens
     
 }
@@ -486,13 +463,13 @@ void AtualizaEnvelope(int personagem)
     linha_cabeca[personagem].y = (B.y+C.y)/2.0;
 
     // Desenha o envelope
-    defineCor(Red);
-    glBegin(GL_LINE_LOOP);
-        glVertex2f(A.x, A.y);
-        glVertex2f(B.x, B.y);
-        glVertex2f(C.x, C.y);
-        glVertex2f(D.x, D.y);
-    glEnd();
+    //defineCor(Red);
+    //glBegin(GL_LINE_LOOP);
+    //    glVertex2f(A.x, A.y);
+    //    glVertex2f(B.x, B.y);
+    //    glVertex2f(C.x, C.y);
+    //    glVertex2f(D.x, D.y);
+    //glEnd();
     
     // armazerna as coordenadas do envelope na instância
     Personagens[personagem].Envelope[0] = A;
@@ -531,9 +508,11 @@ void AtualizaJogo()
         if(Personagens[i].dead || Personagens[i].Tipo == 3)//Se o personagem estiver morto ou for um tiro
             continue;
         if (TestaColisao(0,i)){
+            //cout << Personagens[i].dead << endl;
             Personagens[i].dead = true;
             Personagens[vidas].dead = true;
             vidas--;
+            if (Personagens[i].Tipo==2) kills++; // se realizar "ataque suicida, conta como kill"
         }
         
         for(int j=i; j<nInstancias;j++){
@@ -542,9 +521,11 @@ void AtualizaJogo()
             if(Personagens[i].Tipo != Personagens[j].Tipo)
             {
                 if(TestaColisao(i,j)){
+                    if((Personagens[i].Tipo==2 && Personagens[j].Tipo==4 )|| (Personagens[i].Tipo==4 && Personagens[j].Tipo==2))//se a colisão for do tiro, feito por um inimigo com o tiro de um outro inimigo, conitue
+                        continue;
                     Personagens[i].dead = true;
                     Personagens[j].dead = true;
-                    if((Personagens[i].Tipo==1 && Personagens[j].Tipo==2) ||Personagens[i].Tipo==2 &&Personagens[j].Tipo==1){//Se a colisão for de um tiro com um inimigo kill++;
+                    if(Personagens[j].Tipo==2 ||Personagens[i].Tipo==2 ){//Se for um inimigo que morreu, de alguma forma
                         kills++;
                     }
                 }
@@ -560,12 +541,12 @@ void AtualizaJogo()
             }
         }
         if(vivos == true){//Se tiver inimigos vivos
-            if(timer>=ult_spawn+5){//Passou 5 segundos sem matar um inimigo,spawna o próximo
+            if(timer>=ult_spawn+3){//Passou 3 segundos sem matar um inimigo,spawna o próximo
                 Personagens[ult_inimigo_spawn].dead = false;
                 ult_inimigo_spawn++;
                 ult_spawn = timer;
             }
-        }else{
+        }else{//Caso não tenha nenhum inimigo vivo, spawna o próximo
             Personagens[ult_inimigo_spawn].dead = false;
             ult_inimigo_spawn++;
             ult_spawn = timer;  
@@ -573,7 +554,10 @@ void AtualizaJogo()
     }
 
     if( vidas == 0 || kills == 10)//Jogo acaba, se vida zerar, matou todos os inimigos
-            exit ( 0 );
+    {
+        //cout<< vidas << "  " << kills;
+        exit ( 0 );
+    }
     //  - remover/inserir personagens
     //  - atualizar áreas de mensagens e de icones
 }
@@ -584,15 +568,15 @@ void AtualizaPersonagens(float tempoDecorrido)
     {
         if(Personagens[i].dead)// se um personagem morrer, continua o jogo
             continue;
-        
+         
         if((Personagens[i].Tipo == 2 || Personagens[i].Tipo == 0) &&
-         (Personagens[i].Posicao.x >= 50 || Personagens[i].Posicao.x <= -50 
-         || Personagens[i].Posicao.y >= 50|| Personagens[i].Posicao.y <= -50))
+         (linha_cabeca[i].x >= 50 || linha_cabeca[i].x <= -50 
+         || linha_cabeca[i].y >= 50|| linha_cabeca[i].y <= -50))
         {
             float AnguloAtual = Personagens[i].Rotacao;
             Personagens[i].Direcao = Ponto(0,1); //aleatoriamente muda o angulo de movimento 
-            Personagens[i].Direcao.rotacionaZ(180+AnguloAtual); // das naves inimigas
-            Personagens[i].Rotacao = 180+AnguloAtual;
+            Personagens[i].Direcao.rotacionaZ(90+AnguloAtual); // das naves inimigas
+            Personagens[i].Rotacao = 90+AnguloAtual;
         }
         if(Personagens[i].Tipo == 2 && rand()%1000 <5){//Aleatoriza o movimento dos inimigos
             Personagens[i].Direcao = Ponto(0,1); //aleatoriamente muda o angulo de movimento 
@@ -606,7 +590,7 @@ void AtualizaPersonagens(float tempoDecorrido)
             Personagens[nInstancias].Direcao = Personagens[i].Direcao;
             Personagens[nInstancias].Escala = Ponto (1,1);
             Personagens[nInstancias].Pivot = Ponto (0.5,0);
-            Personagens[nInstancias].Tipo = 4;//Tiro
+            Personagens[nInstancias].Tipo = 4;//Tiro inimigo
             Personagens[nInstancias].IdDoModelo = 7;
             Personagens[nInstancias].Velocidade = 5 + Personagens[i].Velocidade;
             Personagens[nInstancias].modelo = DesenhaPersonagemMatricial;
@@ -649,7 +633,7 @@ void display( void )
 	glLineWidth(1);
 	glColor3f(1,1,1); // R, G, B  [0..1]
     
-    DesenhaEixos();
+    //DesenhaEixos();
     
     DesenhaPersonagens();
     AtualizaPersonagens(T2.getDeltaT());
@@ -704,8 +688,8 @@ void keyboard ( unsigned char key, int x, int y )
                         Personagens[nInstancias].Direcao = Personagens[0].Direcao;
                         Personagens[nInstancias].Escala = Ponto (1,1);
                         Personagens[nInstancias].Pivot = Ponto (0.5,0);
-                        Personagens[nInstancias].Tipo = 3;//Tiro
-                        Personagens[nInstancias].IdDoModelo = 1;
+                        Personagens[nInstancias].Tipo = 3;//Tiro próprio
+                        Personagens[nInstancias].IdDoModelo = 1;//"projetilInimigo.txt"
                         Personagens[nInstancias].Velocidade = 5 + Personagens[0].Velocidade;
                         Personagens[nInstancias].modelo = DesenhaPersonagemMatricial;
                         nInstancias++;
