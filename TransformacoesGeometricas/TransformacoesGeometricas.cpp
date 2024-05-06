@@ -365,8 +365,16 @@ void CriaInstancias()
      int j = 0; 
     for(; i< 14;i++){//ATÉ 10 INIMIGOS
         //variaveis que alteram a cada geração
-        double x = (rand() % 2 == 0) ? -40.0 : 40.0;
-        double y = (rand() % 2 == 0) ? -40.0 : 40.0;
+        double x, y;
+        if (rand() % 2 == 0) { //Inimigo sempre spawna perto de uma das extremidades, criando uma área segura no meio
+            // Spawn na extremidade esquerda ou direita
+            x = (rand() % 2 == 0) ? -40.0 : 40.0;
+            y = (rand() % 80) - 40.0; // Variação vertical dentro do mapa
+        } else {
+            // Spawn na extremidade superior ou inferior
+            x = (rand() % 80) - 40.0; // Variação horizontal dentro do mapa
+            y = (rand() % 2 == 0) ? -40.0 : 40.0;
+        }
         Personagens[i].Posicao = Ponto (x,y);// fazer val aleatório dentro do mapa
         Personagens[i].IdDoModelo = rand() % 4 + 3; //Fazer um valor random entre 3 a 6 (DEVEM SER 4 MODELOS)
         ang = (rand() % 361) - 180;
@@ -382,10 +390,10 @@ void CriaInstancias()
         Personagens[i].dead = true;//começa morto, para não aparecer+
         Personagens[i].Escala = Ponto (1,1);
         Personagens[i].Tipo = 2;//Inimigo
-        Personagens[i].Velocidade = 4;
+        Personagens[i].Velocidade = 5;
         Personagens[i].t = 0.0;//tempo do ultimo tiro realizado
         Personagens[i].modelo = DesenhaPersonagemMatricial;
-        cout << "inimigo: "<< i << " criado"<< endl;
+        //cout << "inimigo: "<< i << " criado"<< endl;
     }
     
     nInstancias = i; // esta variavel deve conter a quantidade total de personagens
@@ -502,16 +510,20 @@ void AtualizaJogo()
     }
     // Feito o calculo, eh preciso testar todos os tiros e
     // demais personagens contra o jogador
+
     
     for(int i=4; i<nInstancias;i++) // comeca em 4 pois o 0 eh o personagem e 1->3
     {
-        if(Personagens[i].dead || Personagens[i].Tipo == 3)//Se o personagem estiver morto ou for um tiro
+        if (Personagens[i].dead || Personagens[i].Tipo == 3)//Se o personagem estiver morto ou for um tiro
             continue;
-        if (TestaColisao(0,i)){
-            //cout << Personagens[i].dead << endl;
+
+        if ((Personagens[i].Tipo==3||Personagens[i].Tipo==4)&& timer > Personagens[i].t+10)Personagens[i].dead;//Tiros depois de 10 segundos morrem     
+        if (TestaColisao(0,i) && !Personagens[0].dead){
+            //cout << Personagens[i].dead << " " << Personagens[i].Tipo<< endl;
+            if(Personagens[i].Tipo==4 && Personagens[i].t == timer)continue;
             Personagens[i].dead = true;
             Personagens[vidas].dead = true;
-            vidas--;
+            if(vidas>0)vidas--;
             if (Personagens[i].Tipo==2) kills++; // se realizar "ataque suicida, conta como kill"
         }
         
@@ -521,8 +533,9 @@ void AtualizaJogo()
             if(Personagens[i].Tipo != Personagens[j].Tipo)
             {
                 if(TestaColisao(i,j)){
-                    if((Personagens[i].Tipo==2 && Personagens[j].Tipo==4 )|| (Personagens[i].Tipo==4 && Personagens[j].Tipo==2))//se a colisão for do tiro, feito por um inimigo com o tiro de um outro inimigo, conitue
+                    if((Personagens[i].Tipo==2 && Personagens[j].Tipo==4 ) || (Personagens[i].Tipo==4 && Personagens[j].Tipo==2))//se a colisão for do tiro, feito por um inimigo com o tiro de um outro inimigo, conitue
                         continue;
+                    cout << Personagens[j].Tipo << " " << Personagens[i].Tipo<< endl;
                     Personagens[i].dead = true;
                     Personagens[j].dead = true;
                     if(Personagens[j].Tipo==2 ||Personagens[i].Tipo==2 ){//Se for um inimigo que morreu, de alguma forma
@@ -552,11 +565,24 @@ void AtualizaJogo()
             ult_spawn = timer;  
         }
     }
+    glColor3f(1.0, 1.0, 1.0); // Cor do texto (branco)
+    glRasterPos2f(10, 10); // Posição do texto na tela
 
     if( vidas == 0 || kills == 10)//Jogo acaba, se vida zerar, matou todos os inimigos
     {
         //cout<< vidas << "  " << kills;
-        exit ( 0 );
+        glColor3f(0.0, 0.0, 0.0); // Cor do texto (branco)
+        glRasterPos2f(-15, 0); // Posição do texto na tela
+        const char* texto;
+        if(vidas == 0) {
+            texto = "DERROTA, voce falhou!";
+            Personagens[0].dead = true;
+        }
+        else {texto = "VOCE GANHOU, parabens!";}
+        for (int i = 0; texto[i] != '\0'; ++i) {
+            glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, texto[i]);
+        }
+        
     }
     //  - remover/inserir personagens
     //  - atualizar áreas de mensagens e de icones
@@ -594,6 +620,7 @@ void AtualizaPersonagens(float tempoDecorrido)
             Personagens[nInstancias].IdDoModelo = 7;
             Personagens[nInstancias].Velocidade = 5 + Personagens[i].Velocidade;
             Personagens[nInstancias].modelo = DesenhaPersonagemMatricial;
+            Personagens[nInstancias].t=timer;//variavel utilizada para dar 1 segundo de cooldown, até dar dano, para evitar bug de dano na hora de sua geração
             Personagens[i].t = timer;
             nInstancias++;
         }
@@ -690,8 +717,9 @@ void keyboard ( unsigned char key, int x, int y )
                         Personagens[nInstancias].Pivot = Ponto (0.5,0);
                         Personagens[nInstancias].Tipo = 3;//Tiro próprio
                         Personagens[nInstancias].IdDoModelo = 1;//"projetilInimigo.txt"
-                        Personagens[nInstancias].Velocidade = 5 + Personagens[0].Velocidade;
+                        Personagens[nInstancias].Velocidade = 7 + Personagens[0].Velocidade;
                         Personagens[nInstancias].modelo = DesenhaPersonagemMatricial;
+                        Personagens[nInstancias].t=timer;
                         nInstancias++;
                         limit_tiro--;
                         Personagens[0].t=timer;
