@@ -514,13 +514,14 @@ void AtualizaJogo()
     
     for(int i=4; i<nInstancias;i++) // comeca em 4 pois o 0 eh o personagem e 1->3
     {
-        if (Personagens[i].dead || Personagens[i].Tipo == 3)//Se o personagem estiver morto ou for um tiro
+        if (Personagens[i].dead)//Se o personagem estiver morto ou for um tiro
             continue;
 
         if ((Personagens[i].Tipo==3||Personagens[i].Tipo==4)&& timer > Personagens[i].t+10)Personagens[i].dead;//Tiros depois de 10 segundos morrem     
         if (TestaColisao(0,i) && !Personagens[0].dead){
             //cout << Personagens[i].dead << " " << Personagens[i].Tipo<< endl;
-            if(Personagens[i].Tipo==4 && Personagens[i].t == timer)continue;
+            if(Personagens[i].Tipo==4 && Personagens[i].t == timer)continue;//Não permite o bug da bala ressem spawnada
+            if(Personagens[i].Tipo==3) continue; //deixa o tiro passar reto 
             Personagens[i].dead = true;
             Personagens[vidas].dead = true;
             if(vidas>0)vidas--;
@@ -533,14 +534,15 @@ void AtualizaJogo()
             if(Personagens[i].Tipo != Personagens[j].Tipo)
             {
                 if(TestaColisao(i,j)){
-                    if((Personagens[i].Tipo==2 && Personagens[j].Tipo==4 ) || (Personagens[i].Tipo==4 && Personagens[j].Tipo==2))//se a colisão for do tiro, feito por um inimigo com o tiro de um outro inimigo, conitue
-                        continue;
-                    cout << Personagens[j].Tipo << " " << Personagens[i].Tipo<< endl;
+                    //se a colisão for do tiro, feito por um inimigo com o tiro de um outro inimigo, conitue
+                    if((Personagens[i].Tipo==2 && Personagens[j].Tipo==4 ) || (Personagens[i].Tipo==4 && Personagens[j].Tipo==2))continue;
+                    //Não permite o bug da tiro invisivel, matar um inimigo
+                    if(((Personagens[i].Tipo==2 && Personagens[j].Tipo==3 ) || (Personagens[i].Tipo==3 && Personagens[j].Tipo==2)) && (Personagens[i].dead || Personagens[j].dead))continue;
+                    //cout << Personagens[j].Tipo << " " << Personagens[i].Tipo<< endl;
                     Personagens[i].dead = true;
                     Personagens[j].dead = true;
-                    if(Personagens[j].Tipo==2 ||Personagens[i].Tipo==2 ){//Se for um inimigo que morreu, de alguma forma
-                        kills++;
-                    }
+                    if(Personagens[j].Tipo==2 ||Personagens[i].Tipo==2 )kills++;//Se for um inimigo que morreu, conta como kill
+                
                 }
             }
         }
