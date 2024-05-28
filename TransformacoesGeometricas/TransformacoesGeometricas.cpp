@@ -576,7 +576,7 @@ void AtualizaJogo()
         glColor3f(0.0, 0.0, 0.0); // Cor do texto (branco)
         glRasterPos2f(-15, 0); // Posição do texto na tela
         const char* texto;
-        if(vidas == 0) {
+        if(vidas == 0 && kills !=10) {//Se morrer e todas as naves não tenham sido abatidas
             texto = "DERROTA, voce falhou!";
             Personagens[0].dead = true;
         }
