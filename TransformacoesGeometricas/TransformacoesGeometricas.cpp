@@ -538,6 +538,7 @@ void AtualizaJogo()
                     if((Personagens[i].Tipo==2 && Personagens[j].Tipo==4 ) || (Personagens[i].Tipo==4 && Personagens[j].Tipo==2))continue;
                     //Não permite o bug da tiro invisivel, matar um inimigo
                     if(((Personagens[i].Tipo==2 && Personagens[j].Tipo==3 ) || (Personagens[i].Tipo==3 && Personagens[j].Tipo==2)) && (Personagens[i].dead || Personagens[j].dead))continue;
+                    if(((Personagens[i].Tipo==4 && Personagens[j].Tipo==3 ) || (Personagens[i].Tipo==3 && Personagens[j].Tipo==4)) && (Personagens[i].dead || Personagens[j].dead))continue;
                     //cout << Personagens[j].Tipo << " " << Personagens[i].Tipo<< endl;
                     Personagens[i].dead = true;
                     Personagens[j].dead = true;
@@ -576,11 +577,9 @@ void AtualizaJogo()
         glColor3f(0.0, 0.0, 0.0); // Cor do texto (branco)
         glRasterPos2f(-15, 0); // Posição do texto na tela
         const char* texto;
-        if(vidas == 0) {
-            texto = "DERROTA, voce falhou!";
-            Personagens[0].dead = true;
-        }
-        else {texto = "VOCE GANHOU, parabens!";}
+        if (vidas == 0) Personagens[0].dead = true;
+        if(vidas == 0 && kills !=10) texto = "DERROTA, voce falhou!";
+        else texto = "VOCE GANHOU, parabens!";
         for (int i = 0; texto[i] != '\0'; ++i) {
             glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, texto[i]);
         }
